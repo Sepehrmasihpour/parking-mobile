@@ -89,8 +89,6 @@ codepush.json
 # Build cache
 .cache
 
-# NPM package lock file (if using Yarn)
-package-lock.json
 
 # ESLint cache
 .eslintcache
