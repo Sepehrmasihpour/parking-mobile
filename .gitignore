@@ -1,0 +1,129 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+.expo-shared/
+
+# macOS files
+.DS_Store
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Metro Bundler cache
+metro-cache/
+
+# Watchman logs
+.watchmanconfig
+
+# Android build files
+/android
+*.apk
+*.keystore
+
+# iOS build files
+/ios
+*.xcworkspace
+*.xcodeproj
+*.xcuserdatad
+
+# Build output directories
+build/
+dist/
+
+# Test output
+coverage/
+
+# Environment variables
+.env
+.env.*
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.swp
+
+# Temporary files
+.tmp
+.temp
+
+# Asset cache
+*.expo
+*.expo-shared
+
+# React Native packager
+.expo/
+web-build/
+.expo-shared/
+
+# Exclude Fastlane files if using Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Bundler
+.bundle
+
+# CocoaPods
+ios/Pods/
+
+# Sentry debug files
+*.dSYM.zip
+*.jsbundle
+
+# CodePush
+codepush.json
+
+# Misc
+*.log
+*.lock
+*.pdb
+*.pid
+*.seed
+*.pid.lock
+
+# Build cache
+.cache
+
+# NPM package lock file (if using Yarn)
+package-lock.json
+
+# ESLint cache
+.eslintcache
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Certificates
+certs/
+
+# JetBrains IDEs
+*.iml
+.idea/
+
+# Thumbnails
+._*
+Thumbs.db
+
+# Firebase
+/google-services.json
+/GoogleService-Info.plist
+
+# Storybook
+storybook-static/
+
+# Git stash
+.stash
+
+# React Native debugging logs
+debug.log
+
+# Prettier
+.prettiercache
+
+# Yarn Integrity
+.yarn-integrity
