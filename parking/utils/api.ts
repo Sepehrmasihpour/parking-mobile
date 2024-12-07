@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Base URL from the environment variables
-const API_URL = process.env.API_URL || "http://localhost:8000/api";
+const API_URL = "http://185.221.237.219:8000"; // process.env.API_URL || "http://localhost:8000/api";
 
 // Create an Axios instance for API requests
 const apiClient = axios.create({
@@ -25,7 +25,7 @@ const setAuthToken = (token: string | null) => {
 
 // User Registration
 export const registerUser = async (userName: string, rawPassword: string) => {
-  const response = await apiClient.post("/register", {
+  const response = await apiClient.post("/auth/register", {
     user_name: userName,
     raw_password: rawPassword,
   });
@@ -38,7 +38,7 @@ export const loginWithPassword = async (username: string, password: string) => {
   formData.append("username", username);
   formData.append("password", password);
 
-  const response = await apiClient.post("/login/password", formData, {
+  const response = await apiClient.post("/auth/login/password", formData, {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
   });
   return response.data;
@@ -46,7 +46,7 @@ export const loginWithPassword = async (username: string, password: string) => {
 
 // Refresh Token
 export const refreshAuthToken = async (refreshToken: string) => {
-  const response = await apiClient.post("/refresh", {
+  const response = await apiClient.post("auth/refresh", {
     refresh_token: refreshToken,
   });
   return response.data;
@@ -55,21 +55,21 @@ export const refreshAuthToken = async (refreshToken: string) => {
 // Logout
 export const logoutUser = async (accessToken: string) => {
   setAuthToken(accessToken);
-  const response = await apiClient.post("/logout");
+  const response = await apiClient.post("auth/logout");
   return response.data;
 };
 
 // Fetch User Data
 export const fetchUserData = async (accessToken: string) => {
   setAuthToken(accessToken);
-  const response = await apiClient.get("/data");
+  const response = await apiClient.get("user/data");
   return response.data;
 };
 
 // Generate Door Key
 export const getDoorKey = async (accessToken: string) => {
   setAuthToken(accessToken);
-  const response = await apiClient.get("/key");
+  const response = await apiClient.get("user/key");
   return response.data;
 };
 
@@ -79,7 +79,9 @@ export const createAddBalanceToken = async (
   accessToken: string
 ) => {
   setAuthToken(accessToken);
-  const response = await apiClient.get(`/addBalance/create?amount=${amount}`);
+  const response = await apiClient.get(
+    `user/addBalance/create?amount=${amount}`
+  );
   return response.data;
 };
 
@@ -95,19 +97,13 @@ export const addBalance = async (token: string, isAdmin: boolean = false) => {
   return response.data;
 };
 
-// Create Ticket
-export const createTicket = async () => {
-  const response = await apiClient.get("/ticket", { responseType: "text" }); // Assuming HTML is returned
-  return response.data;
-};
-
 // Open Parking Door
 export const openParkingDoor = async (
   door: "entry" | "exit",
   token: string,
   paymentSuccessful: boolean = false
 ) => {
-  const response = await apiClient.post(`/open/${door}`, {
+  const response = await apiClient.post(`parking/open/${door}`, {
     token: { token },
     payment_successfull: paymentSuccessful,
   });
