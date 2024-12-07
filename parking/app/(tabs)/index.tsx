@@ -1,78 +1,208 @@
-import { Image, StyleSheet, Platform } from "react-native";
-
-import { HelloWave } from "@/components/HelloWave";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
+import React, { useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  BackHandler,
+} from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import * as SecureStore from "expo-secure-store";
+import { registerUser, loginWithPassword } from "../../utils/api"; // Adjust the path accordingly
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
+// Regex for validation
+const USERNAME_REGEX = /^[A-Za-z0-9_]+$/;
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,35}$/;
+
+export default function IndexScreen() {
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [userChoice, setUserChoice] = useState<"none" | "signUp" | "signIn">(
+    "none"
+  );
+  const [userName, setUserName] = useState("");
+  const [rawPassword, setRawPassword] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [apiError, setApiError] = useState("");
+
+  const handleSignUp = async () => {
+    setUsernameError("");
+    setPasswordError("");
+    setApiError("");
+
+    if (!USERNAME_REGEX.test(userName)) {
+      setUsernameError(
+        "Username can only contain letters, numbers, or underscores."
+      );
+      return;
+    }
+
+    if (!PASSWORD_REGEX.test(rawPassword)) {
+      setPasswordError(
+        "Password must be 6-35 characters long and include both letters and numbers."
+      );
+      return;
+    }
+
+    try {
+      const response = await registerUser(userName, rawPassword);
+      // If successful, securely store credentials
+      await SecureStore.setItemAsync("userName", userName);
+      await SecureStore.setItemAsync("rawPassword", rawPassword);
+
+      setIsSignedIn(true);
+    } catch (error: any) {
+      if (error?.response?.status === 409) {
+        setApiError("This username has been taken. Please choose another.");
+      } else {
+        setApiError("An error occurred while signing up. Please try again.");
       }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
+    }
+  };
+
+  const handleSignIn = async () => {
+    setUsernameError("");
+    setPasswordError("");
+    setApiError("");
+
+    try {
+      const response = await loginWithPassword(userName, rawPassword);
+
+      // Parse response JSON
+      const { access_token, refresh_token, token_type } = response;
+
+      // Securely store credentials and tokens
+      await SecureStore.setItemAsync("userName", userName);
+      await SecureStore.setItemAsync("rawPassword", rawPassword);
+      await SecureStore.setItemAsync("accessToken", access_token);
+      await SecureStore.setItemAsync("refreshToken", refresh_token);
+
+      setIsSignedIn(true);
+    } catch (error: any) {
+      if (error?.response?.status === 400) {
+        setUsernameError("No user found with this username.");
+      } else if (error?.response?.status === 401) {
+        setPasswordError("Incorrect password. Please try again.");
+      } else {
+        setApiError("An error occurred while signing in. Please try again.");
+      }
+    }
+  };
+
+  // Handle back button press to reset userChoice
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (userChoice !== "none") {
+          setUserChoice("none");
+          return true; // Prevent default back action
+        }
+        return false; // Allow default back action if on the main screen
+      };
+
+      // Add event listener
+      BackHandler.addEventListener("hardwareBackPress", onBackPress);
+
+      // Cleanup event listener on unmount
+      return () =>
+        BackHandler.removeEventListener("hardwareBackPress", onBackPress);
+    }, [userChoice])
+  );
+
+  if (isSignedIn) {
+    return (
+      <ThemedView style={styles.centeredContainer}>
+        <ThemedText type="title">The user has signed in.</ThemedText>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try ittttttt</ThemedText>
-        <ThemedText>
-          Edit{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText>{" "}
-          to see changes. Press{" "}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: "cmd + d",
-              android: "cmd + m",
-              web: "F12",
-            })}
-          </ThemedText>{" "}
-          to open developer tools.
-        </ThemedText>
+    );
+  }
+
+  if (userChoice === "none") {
+    return (
+      <ThemedView style={styles.centeredContainer}>
+        <Button title="Sign Up" onPress={() => setUserChoice("signUp")} />
+        <Button title="Sign In" onPress={() => setUserChoice("signIn")} />
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this
-          starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{" "}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText>{" "}
-          to get a fresh <ThemedText type="defaultSemiBold">app</ThemedText>{" "}
-          directory. This will move the current{" "}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    );
+  }
+
+  return (
+    <ThemedView style={styles.container}>
+      <ThemedText type="title">
+        {userChoice === "signUp" ? "Sign Up" : "Sign In"}
+      </ThemedText>
+
+      <View style={styles.formGroup}>
+        <Text>Username:</Text>
+        <TextInput
+          style={styles.input}
+          value={userName}
+          onChangeText={setUserName}
+          placeholder="Enter a username"
+          autoCapitalize="none"
+        />
+        {usernameError ? (
+          <Text style={styles.errorText}>{usernameError}</Text>
+        ) : null}
+        {apiError ? <Text style={styles.errorText}>{apiError}</Text> : null}
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text>Password:</Text>
+        <TextInput
+          style={styles.input}
+          value={rawPassword}
+          onChangeText={setRawPassword}
+          placeholder="Enter a password"
+          secureTextEntry
+          autoCapitalize="none"
+        />
+        {passwordError ? (
+          <Text style={styles.errorText}>{passwordError}</Text>
+        ) : null}
+      </View>
+
+      <Button
+        title="Confirm"
+        onPress={userChoice === "signUp" ? handleSignUp : handleSignIn}
+      />
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    gap: 16,
+  },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    gap: 8,
+    gap: 16,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  formGroup: {
+    marginBottom: 16,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
+  label: {
+    color: "white", // Text color for labels
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#aaa",
+    borderRadius: 4,
+    padding: 8,
+    marginTop: 4,
+    color: "white", // Text color for input
+    backgroundColor: "#333", // Background color for better contrast
+  },
+  errorText: {
+    color: "red",
+    marginTop: 4,
   },
 });
