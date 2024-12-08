@@ -7,14 +7,19 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, createContext } from "react";
 import "react-native-reanimated";
 import * as SecureStore from "expo-secure-store";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+// Create AuthContext to share isSignedIn and setIsSignedIn
+export const AuthContext = createContext({
+  isSignedIn: false,
+  setIsSignedIn: (val: boolean) => {},
+});
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -45,22 +50,13 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        {isSignedIn ? (
-          <>
-            {/* Render the tabs layout */}
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </>
-        ) : (
-          <>
-            {/* Render the login/sign-up layout */}
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-          </>
-        )}
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <AuthContext.Provider value={{ isSignedIn, setIsSignedIn }}>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </AuthContext.Provider>
   );
 }
