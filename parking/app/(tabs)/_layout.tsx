@@ -28,7 +28,7 @@ export default function TabLayout() {
         }),
       }}
     >
-      {/* Only valid children here */}
+      {/* Home tab */}
       <Tabs.Screen
         name="index"
         options={{
@@ -38,12 +38,13 @@ export default function TabLayout() {
           ),
         }}
       />
+      {/* Explore tab with wallet icon */}
       <Tabs.Screen
-        name="explore"
+        name="balance"
         options={{
-          title: "Explore",
+          title: "Balance",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+            <IconSymbol size={28} name="balance" color={color} />
           ),
         }}
       />

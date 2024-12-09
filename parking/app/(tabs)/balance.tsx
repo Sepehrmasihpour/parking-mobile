@@ -1,25 +1,27 @@
 import React, { useContext } from "react";
-import { StyleSheet, View, Text, Platform } from "react-native";
-
+import { StyleSheet, Text } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { AuthContext } from "../_layout"; // Import AuthContext from the parent layout
+import { Colors } from "@/constants/Colors"; // Import Colors constants
 
 export default function ExploreScreen() {
   const { isSignedIn } = useContext(AuthContext);
 
   if (!isSignedIn) {
     return (
-      <ThemedView style={styles.container}>
-        <Text style={styles.errorText}>You are not signed in. 😢</Text>
+      <ThemedView style={[styles.container, styles.darkBackground]}>
+        <Text style={[styles.errorText, styles.darkText]}>
+          You are not signed in. 😢
+        </Text>
       </ThemedView>
     );
   }
 
   // Render normal content if the user is signed in
   return (
-    <ThemedView style={styles.container}>
-      <Text style={styles.title}>Welcome to Explore</Text>
-      <Text style={styles.description}>
+    <ThemedView style={[styles.container, styles.darkBackground]}>
+      <Text style={[styles.title, styles.darkText]}>Welcome to Explore</Text>
+      <Text style={[styles.description, styles.darkText]}>
         Here you can explore amazing content!
       </Text>
     </ThemedView>
@@ -32,7 +34,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 16,
-    backgroundColor: "#f8f8f8",
+  },
+  darkBackground: {
+    backgroundColor: Colors.dark.background, // Use dark mode background color
+  },
+  darkText: {
+    color: Colors.dark.text, // Use dark mode text color
   },
   title: {
     fontSize: 24,
@@ -41,12 +48,10 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 16,
-    color: "#666",
     textAlign: "center",
   },
   errorText: {
     fontSize: 18,
-    color: "red",
     textAlign: "center",
     marginBottom: 16,
   },

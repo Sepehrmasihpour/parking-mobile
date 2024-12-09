@@ -46,7 +46,7 @@ export const loginWithPassword = async (username: string, password: string) => {
 
 // Refresh Token
 export const refreshAuthToken = async (refreshToken: string) => {
-  const response = await apiClient.post("auth/refresh", {
+  const response = await apiClient.post("/auth/refresh", {
     refresh_token: refreshToken,
   });
   return response.data;
@@ -55,21 +55,21 @@ export const refreshAuthToken = async (refreshToken: string) => {
 // Logout
 export const logoutUser = async (accessToken: string) => {
   setAuthToken(accessToken);
-  const response = await apiClient.post("auth/logout");
+  const response = await apiClient.post("/auth/logout");
   return response.data;
 };
 
 // Fetch User Data
 export const fetchUserData = async (accessToken: string) => {
   setAuthToken(accessToken);
-  const response = await apiClient.get("user/data");
+  const response = await apiClient.get("/user/data");
   return response.data;
 };
 
 // Generate Door Key
 export const getDoorKey = async (accessToken: string) => {
   setAuthToken(accessToken);
-  const response = await apiClient.get("user/key");
+  const response = await apiClient.get("/user/key");
   return response.data;
 };
 

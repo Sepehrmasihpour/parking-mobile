@@ -20,7 +20,8 @@ export const updateTokens = async (
 // Refresh tokens function
 export const refreshTokens = async () => {
   try {
-    const { refreshToken } = await getAuthTokens();
+    // Get the refresh token directly from SecureStore
+    const refreshToken = await SecureStore.getItemAsync("refreshToken");
     if (!refreshToken) {
       throw new Error("No refresh token available");
     }
