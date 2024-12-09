@@ -14,26 +14,22 @@ const KeyView: React.FC<KeyViewProps> = ({ keyValue, setKey }) => {
   const [countDown, setCountDown] = useState<number>(60);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (keyValue) {
-      setCountDown(60); // reset countdown each time a new key is obtained
-      interval = setInterval(() => {
-        setCountDown((prev) => {
-          if (prev <= 1) {
-            // Once we hit zero, reset key
-            setKey(null);
-            if (interval) clearInterval(interval);
-            return 60; // reset timer value if needed
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [keyValue, setKey]);
+    if (!keyValue) return; // Do nothing if keyValue is null
 
+    setCountDown(60); // Reset countdown only when a valid key is obtained
+    const interval = setInterval(() => {
+      setCountDown((prev) => {
+        if (prev <= 1) {
+          setKey(null); // Reset key after countdown
+          clearInterval(interval);
+          return 60; // Reset timer if needed
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [keyValue]);
   const handleGetKey = async () => {
     try {
       const { accessToken } = await getAuthTokens();
@@ -52,14 +48,14 @@ const KeyView: React.FC<KeyViewProps> = ({ keyValue, setKey }) => {
     <View style={styles.container}>
       {keyValue === null ? (
         <TouchableOpacity style={styles.keyButton} onPress={handleGetKey}>
-          <IconSymbol name="key" size={60} color="#fff" />
+          <IconSymbol name="key" size={70} color="#fff" />
         </TouchableOpacity>
       ) : (
         <View style={styles.qrContainer}>
           <Text style={styles.expiryText}>Expires in: {countDown}s</Text>
           <QRCode
             value={keyValue}
-            size={250} // Adjust size as needed
+            size={300} // Adjust size as needed
           />
         </View>
       )}

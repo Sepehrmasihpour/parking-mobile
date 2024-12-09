@@ -1,5 +1,5 @@
 import * as SecureStore from "expo-secure-store";
-import { loginWithPassword, refreshAuthToken } from "./api";
+import { loginWithPassword, refreshAuthToken, logoutUser } from "./api";
 
 // Retrieve stored user credentials
 export const getUserCredentials = async () => {
@@ -22,6 +22,7 @@ export const refreshTokens = async () => {
   try {
     // Get the refresh token directly from SecureStore
     const refreshToken = await SecureStore.getItemAsync("refreshToken");
+    const accessToken = await SecureStore.getItemAsync("accessToken");
     if (!refreshToken) {
       throw new Error("No refresh token available");
     }
@@ -29,11 +30,11 @@ export const refreshTokens = async () => {
     // First attempt to refresh tokens using the primary endpoint
     try {
       const response = await refreshAuthToken(refreshToken);
-      const { token, refresh_token } = response;
+      const { access_token, refresh_token } = response;
 
       // Update tokens in secure storage
-      await updateTokens(token, refresh_token);
-      return { accessToken: token, refreshToken: refresh_token };
+      await updateTokens(access_token, refresh_token);
+      return { accessToken: access_token, refreshToken: refresh_token };
     } catch (error: any) {
       if (error.response && error.response.status === 401) {
         console.warn(
@@ -41,6 +42,9 @@ export const refreshTokens = async () => {
         );
 
         // Retrieve stored user credentials
+        if (accessToken) {
+          await logoutUser(accessToken);
+        }
         const { userName, rawPassword } = await getUserCredentials();
         if (!userName || !rawPassword) {
           throw new Error("No user credentials available for login.");
@@ -48,11 +52,12 @@ export const refreshTokens = async () => {
 
         // Use the loginWithPassword endpoint to get new tokens
         const response = await loginWithPassword(userName, rawPassword);
-        const { token, refresh_token } = response;
+        const { access_token, refresh_token } = response;
 
         // Update tokens in secure storage
-        await updateTokens(token, refresh_token);
-        return { accessToken: token, refreshToken: refresh_token };
+
+        await updateTokens(access_token, refresh_token);
+        return { accessToken: access_token, refreshToken: refresh_token };
       } else {
         throw error;
       }

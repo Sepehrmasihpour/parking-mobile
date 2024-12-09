@@ -12,7 +12,7 @@ import { getAuthTokens } from "../../utils/token";
 const USERNAME_REGEX = /^[A-Za-z0-9_]+$/;
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,35}$/;
 
-export default function LoginSignUpScreen() {
+export default function HomeScreen() {
   const { isSignedIn, setIsSignedIn } = useContext(AuthContext);
   const [userChoice, setUserChoice] = useState<null | "signUp" | "signIn">(
     null

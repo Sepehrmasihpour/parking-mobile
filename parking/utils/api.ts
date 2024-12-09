@@ -103,7 +103,7 @@ export const openParkingDoor = async (
   token: string,
   paymentSuccessful: boolean = false
 ) => {
-  const response = await apiClient.post(`parking/open/${door}`, {
+  const response = await apiClient.post(`/parking/open/${door}`, {
     token: { token },
     payment_successfull: paymentSuccessful,
   });
