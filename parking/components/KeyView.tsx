@@ -4,69 +4,31 @@ import QRCode from "react-native-qrcode-svg";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { getDoorKey } from "../utils/api";
 import { getAuthTokens } from "../utils/token";
+import { blue } from "react-native-reanimated/lib/typescript/Colors";
 
 interface KeyViewProps {
-  keyValue: string | null;
-  setKey: (value: string | null) => void;
+  keyValue: string;
+  countDown: number;
 }
 
-const KeyView: React.FC<KeyViewProps> = ({ keyValue, setKey }) => {
-  const [countDown, setCountDown] = useState<number>(60);
-
-  useEffect(() => {
-    if (!keyValue) return; // Do nothing if keyValue is null
-
-    setCountDown(60); // Reset countdown only when a valid key is obtained
-    const interval = setInterval(() => {
-      setCountDown((prev) => {
-        if (prev <= 1) {
-          setKey(null); // Reset key after countdown
-          clearInterval(interval);
-          return 60; // Reset timer if needed
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, [keyValue]);
-  const handleGetKey = async () => {
-    try {
-      const { accessToken } = await getAuthTokens();
-      const response = await getDoorKey(accessToken);
-      // Assuming response is { token: string }
-      if (response && response.token) {
-        setKey(response.token);
-      }
-    } catch (error) {
-      console.error("Failed to get key:", error);
-      // Optionally handle error, display message, etc.
-    }
-  };
-
+const KeyView: React.FC<KeyViewProps> = ({ keyValue, countDown }) => {
   return (
     <View style={styles.container}>
-      {keyValue === null ? (
-        <TouchableOpacity style={styles.keyButton} onPress={handleGetKey}>
-          <IconSymbol name="key" size={70} color="#fff" />
-        </TouchableOpacity>
-      ) : (
-        <View style={styles.qrContainer}>
-          <Text style={styles.expiryText}>Expires in: {countDown}s</Text>
-          <QRCode
-            value={keyValue}
-            size={300} // Adjust size as needed
-          />
-        </View>
-      )}
+      <View style={styles.qrContainer}>
+        <Text style={styles.expiryText}>Expires in: {countDown}s</Text>
+        <QRCode
+          value={keyValue}
+          size={300} // Adjust size as needed
+        />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: "#f1dedc",
     flex: 1,
-    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
   },

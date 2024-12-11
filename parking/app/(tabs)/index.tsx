@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useContext } from "react";
-import { BackHandler } from "react-native";
+import React, { useState, useCallback, useContext, useEffect } from "react";
+import { BackHandler, ActivityIndicator, View, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 import { registerUser, loginWithPassword } from "../../utils/api";
@@ -7,7 +7,7 @@ import { AuthContext } from "../_layout";
 import ChoiceView from "@/components/ChoiceView";
 import AuthForm from "@/components/AuthForm";
 import KeyView from "@/components/KeyView";
-import { getAuthTokens } from "../../utils/token";
+import KeyButton from "@/components/KeyButton";
 
 const USERNAME_REGEX = /^[A-Za-z0-9_]+$/;
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,35}$/;
@@ -22,9 +22,9 @@ export default function HomeScreen() {
   const [usernameError, setUsernameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [apiError, setApiError] = useState("");
-
-  // New state for key management
   const [key, setKey] = useState<string | null>(null);
+  const [keyTimer, setKeyTimer] = useState<number>(60);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -42,6 +42,29 @@ export default function HomeScreen() {
       };
     }, [userChoice])
   );
+
+  useEffect(() => {
+    if (!key) return;
+
+    setKeyTimer(60);
+    const interval = setInterval(() => {
+      setKeyTimer((prev) => {
+        if (prev <= 1) {
+          setKey(null); // Reset key after countdown
+          clearInterval(interval);
+          return 60; // Reset timer if needed
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [key]);
+
+  useEffect(() => {
+    if (!key) return;
+    setIsLoading(false);
+  }, [key]);
 
   const handleSignUp = async () => {
     setUsernameError("");
@@ -66,7 +89,6 @@ export default function HomeScreen() {
       const response = await registerUser(userName, rawPassword);
       await SecureStore.setItemAsync("userName", userName);
       await SecureStore.setItemAsync("rawPassword", rawPassword);
-      // On success:
       setIsSignedIn(true);
     } catch (error: any) {
       if (error?.response?.status === 409) {
@@ -88,7 +110,6 @@ export default function HomeScreen() {
       await SecureStore.setItemAsync("rawPassword", rawPassword);
       await SecureStore.setItemAsync("accessToken", response.access_token);
       await SecureStore.setItemAsync("refreshToken", response.refresh_token);
-      // On success:
       setIsSignedIn(true);
     } catch (error: any) {
       if (error?.response?.status === 400) {
@@ -101,19 +122,18 @@ export default function HomeScreen() {
     }
   };
 
-  const handleClearStorage = async () => {
-    await SecureStore.deleteItemAsync("accessToken");
-    await SecureStore.deleteItemAsync("refreshToken");
-    setIsSignedIn(false);
-  };
-
   if (isSignedIn) {
-    // Replace AuthenticatedView with KeyView and pass key, setKey, and getDoorKey function
-    return (
-      <KeyView
-        keyValue={key} // Renamed prop to keyValue to avoid conflicts with JSX "key" prop
-        setKey={setKey}
-      />
+    if (isLoading) {
+      return (
+        <View style={styles.spinnerContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      );
+    }
+    return key === null ? (
+      <KeyButton setKey={setKey} setLoadingStatus={setIsLoading} />
+    ) : (
+      <KeyView keyValue={key} countDown={keyTimer} />
     );
   }
 
@@ -136,3 +156,11 @@ export default function HomeScreen() {
     />
   );
 }
+
+const styles = StyleSheet.create({
+  spinnerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
