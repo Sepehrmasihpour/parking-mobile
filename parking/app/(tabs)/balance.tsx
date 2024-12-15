@@ -2,10 +2,12 @@ import React, { useContext, useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   Text,
-  Button,
+  TouchableOpacity,
   ScrollView,
   RefreshControl,
   View,
+  BackHandler,
+  ActivityIndicator,
 } from "react-native";
 import { getAuthTokens } from "@/utils/token";
 import { fetchUserData, createAddBalanceToken } from "@/utils/api";
@@ -24,8 +26,10 @@ export default function BalanceScreen() {
   const [addToken, setAddToken] = useState<string | null>(null);
   const [countDown, setCountDown] = useState<number>(60);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<Boolean>(false);
 
   const fetchData = useCallback(async () => {
+    setIsLoading(true);
     try {
       if (isSignedIn && !charge) {
         const { accessToken } = await getAuthTokens();
@@ -35,6 +39,8 @@ export default function BalanceScreen() {
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
+    } finally {
+      setIsLoading(false); // Hide spinner once data is fetched
     }
   }, [isSignedIn, charge]);
 
@@ -49,22 +55,6 @@ export default function BalanceScreen() {
     fetchData().finally(() => setRefreshing(false));
   }, [fetchData]);
 
-  // useEffect when charge changes to true, fetch user data again
-  useEffect(() => {
-    const refetchIfCharged = async () => {
-      if (charge && isSignedIn) {
-        try {
-          const { accessToken } = await getAuthTokens();
-          const data = await fetchUserData(accessToken);
-          setBalance(data.balance);
-        } catch (error) {
-          console.error("Error fetching user data on charge:", error);
-        }
-      }
-    };
-    refetchIfCharged();
-  }, [charge, isSignedIn]);
-
   // useEffect for addToken countdown logic
   useEffect(() => {
     if (!addToken) return;
@@ -74,6 +64,7 @@ export default function BalanceScreen() {
       setCountDown((prev) => {
         if (prev <= 1) {
           setAddToken(null); // Reset addToken after countdown
+          setCharge(false);
           clearInterval(interval);
           return 60; // Reset timer if needed
         }
@@ -86,7 +77,7 @@ export default function BalanceScreen() {
 
   const handleAddBalance = async (amount: number) => {
     // Function to handle creating AddBalanceToken
-    // amount > 10000 guaranteed by AddBalanceConfig logic
+    setIsLoading(true);
     try {
       const { accessToken } = await getAuthTokens();
       const res = await createAddBalanceToken(amount, accessToken);
@@ -96,8 +87,31 @@ export default function BalanceScreen() {
       }
     } catch (error) {
       console.error("Failed to create add balance token:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // Back handler to revert charge if addToken is null
+  useEffect(() => {
+    const onBackPress = () => {
+      // If charge is true and addToken is null, revert charge to false
+      if (charge && addToken === null) {
+        setCharge(false);
+        return true; // Prevent default behavior
+      }
+      return false; // Allow default behavior
+    };
+
+    const backHandlerListener = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => {
+      backHandlerListener.remove();
+    };
+  }, [charge, addToken]);
 
   // Format balance with commas and a large "T"
   const formatBalance = (bal: number | null): string => {
@@ -107,11 +121,19 @@ export default function BalanceScreen() {
 
   if (!isSignedIn) {
     return (
-      <ThemedView style={[styles.container, styles.darkBackground]}>
+      <ThemedView style={[styles.container]}>
         <Text style={[styles.errorText, styles.darkText]}>
           You are not signed in. 😢
         </Text>
       </ThemedView>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <View style={styles.spinnerContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
     );
   }
 
@@ -120,12 +142,12 @@ export default function BalanceScreen() {
     return <KeyView keyValue={addToken} countDown={countDown} />;
   }
 
-  // If charge is true, show AddBalanceConfig
-  if (charge) {
+  // If charge is true and addToken is null, show AddBalanceConfig
+  if (charge && addToken === null) {
     return (
       <ScrollView
-        style={[styles.darkBackground, { flex: 1 }]}
-        contentContainerStyle={styles.container}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -138,8 +160,8 @@ export default function BalanceScreen() {
   // If charge is false, show balance and Add button
   return (
     <ScrollView
-      style={[styles.darkBackground, { flex: 1 }]}
-      contentContainerStyle={styles.container}
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollViewContent}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
@@ -149,9 +171,12 @@ export default function BalanceScreen() {
           {formatBalance(balance)}
         </Text>
       )}
-      <View style={{ marginTop: 20 }}>
-        <Button title="Add" onPress={() => setCharge(true)} color="#007AFF" />
-      </View>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => setCharge(true)}
+      >
+        <Text style={styles.addButtonText}>Add</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -162,9 +187,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
   },
-  darkBackground: {
-    backgroundColor: Colors.dark.background,
-  },
   darkText: {
     color: Colors.dark.text,
   },
@@ -172,11 +194,43 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     textAlign: "center",
-    marginTop: 50,
+    marginBottom: 50,
   },
   errorText: {
     fontSize: 18,
     textAlign: "center",
     marginBottom: 16,
+  },
+  scrollView: {
+    flex: 1,
+    alignSelf: "center",
+    width: "100%", // Make the ScrollView wider
+    maxHeight: "100%", // Center and size in the middle
+    borderRadius: 16,
+    backgroundColor: Colors.dark.background,
+  },
+  scrollViewContent: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 30,
+    marginTop: "30%",
+  },
+  addButton: {
+    marginTop: 0,
+    width: "80%", // Make the button wider
+    paddingVertical: 16,
+    backgroundColor: "#007AFF",
+    borderRadius: 24, // Add rounded edges
+    alignItems: "center",
+  },
+  addButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  spinnerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

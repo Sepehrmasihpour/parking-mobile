@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, Text, StyleSheet } from "react-native";
+import {
+  View,
+  TextInput,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 
 interface AddBalanceConfigProps {
   onConfirm: (amount: number) => void;
@@ -31,7 +37,6 @@ const AddBalanceConfig: React.FC<AddBalanceConfigProps> = ({ onConfirm }) => {
     if (amount >= 10000 && Number.isInteger(amount)) {
       onConfirm(amount);
     } else {
-      // You could show an error message if needed
       console.error("Amount must be an integer and >= 10000");
     }
   };
@@ -46,11 +51,17 @@ const AddBalanceConfig: React.FC<AddBalanceConfigProps> = ({ onConfirm }) => {
         onChangeText={handleChange}
       />
       <View style={styles.buttonRow}>
-        <Button title="+" onPress={handleIncrement} />
-        <Button title="-" onPress={handleDecrement} />
+        <TouchableOpacity style={styles.button} onPress={handleIncrement}>
+          <Text style={styles.buttonText}>+</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleDecrement}>
+          <Text style={styles.buttonText}>-</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.confirmContainer}>
-        <Button title="Confirm" onPress={handleConfirm} color="#007AFF" />
+        <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
+          <Text style={styles.confirmButtonText}>Confirm</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -82,11 +93,35 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: 150,
+    width: "80%", // Adjust width for buttons
     marginBottom: 20,
+  },
+  button: {
+    width: 60, // Increase button width
+    height: 60, // Increase button height
+    backgroundColor: "#007AFF",
+    borderRadius: 30, // Rounded edges
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 24,
+    fontWeight: "bold",
   },
   confirmContainer: {
     marginTop: 20,
+  },
+  confirmButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 24,
+  },
+  confirmButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
 
