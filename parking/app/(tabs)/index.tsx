@@ -96,7 +96,7 @@ export default function HomeScreen() {
       } else {
         setApiError(
           "An error occurred while signing up. Please try again." + error
-        );
+        ); //! the eror output should be deleted later
       }
     }
   };

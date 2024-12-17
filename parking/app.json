@@ -2,7 +2,7 @@
   "expo": {
     "name": "parking",
     "slug": "parking",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -45,6 +45,12 @@
       "eas": {
         "projectId": "423d21ec-4b22-47af-9252-2e882709531c"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/423d21ec-4b22-47af-9252-2e882709531c"
     }
   }
 }
