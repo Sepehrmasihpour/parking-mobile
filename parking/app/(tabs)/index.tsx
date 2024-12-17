@@ -94,7 +94,9 @@ export default function HomeScreen() {
       if (error?.response?.status === 409) {
         setApiError("This username has been taken. Please choose another.");
       } else {
-        setApiError("An error occurred while signing up. Please try again.");
+        setApiError(
+          "An error occurred while signing up. Please try again." + error
+        );
       }
     }
   };
