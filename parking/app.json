@@ -2,7 +2,7 @@
   "expo": {
     "name": "parking",
     "slug": "parking",
-    "version": "1.0.1",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -28,10 +28,18 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/parking-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "black"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
         }
       ]
     ],
@@ -51,6 +59,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/423d21ec-4b22-47af-9252-2e882709531c"
-    }
+    },
+    "owner": "foooool000"
   }
 }

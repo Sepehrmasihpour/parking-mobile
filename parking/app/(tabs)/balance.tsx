@@ -121,7 +121,7 @@ export default function BalanceScreen() {
 
   if (!isSignedIn) {
     return (
-      <ThemedView style={[styles.container]}>
+      <ThemedView style={[styles.erroContainer]}>
         <Text style={[styles.errorText, styles.darkText]}>
           You are not signed in. 😢
         </Text>
@@ -186,6 +186,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 16,
+  },
+  erroContainer: {
+    justifyContent: "center",
+    alignContent: "center",
+    padding: 16,
+    paddingTop: 40,
   },
   darkText: {
     color: Colors.dark.text,
