@@ -31,6 +31,10 @@ export default function HomeScreen() {
       const onBackPress = () => {
         if (userChoice !== null) {
           setUserChoice(null);
+          setUserName("");
+          setRawPassword("");
+          setPasswordError("");
+          setUsernameError("");
           return true;
         }
         return false;
@@ -70,6 +74,7 @@ export default function HomeScreen() {
     setUsernameError("");
     setPasswordError("");
     setApiError("");
+    setIsLoading(true);
 
     if (!USERNAME_REGEX.test(userName)) {
       setUsernameError(
@@ -91,11 +96,14 @@ export default function HomeScreen() {
       await SecureStore.setItemAsync("rawPassword", rawPassword);
       setIsSignedIn(true);
     } catch (error: any) {
+      setIsLoading(false);
       if (error?.response?.status === 409) {
         setApiError("This username has been taken. Please choose another.");
       } else {
         setApiError("An error occurred while signing up. Please try again.");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,6 +111,7 @@ export default function HomeScreen() {
     setUsernameError("");
     setPasswordError("");
     setApiError("");
+    setIsLoading(true);
 
     try {
       const response = await loginWithPassword(userName, rawPassword);
@@ -112,6 +121,7 @@ export default function HomeScreen() {
       await SecureStore.setItemAsync("refreshToken", response.refresh_token);
       setIsSignedIn(true);
     } catch (error: any) {
+      setIsLoading(false);
       if (error?.response?.status === 400) {
         setUsernameError("No user found with this username.");
       } else if (error?.response?.status === 401) {
@@ -119,6 +129,8 @@ export default function HomeScreen() {
       } else {
         setApiError("An error occurred while signing in. Please try again.");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
