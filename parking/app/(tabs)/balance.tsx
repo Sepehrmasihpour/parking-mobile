@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignContent: "center",
     padding: 16,
-    paddingTop: 40,
+    paddingTop: 60,
   },
   darkText: {
     color: Colors.dark.text,
