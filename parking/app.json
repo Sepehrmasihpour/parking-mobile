@@ -2,7 +2,7 @@
   "expo": {
     "name": "parking",
     "slug": "parking",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -16,8 +16,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "pardis.parking",
-      "usesCleartextTraffic": true
+      "package": "pardis.parking"
     },
     "web": {
       "bundler": "metro",
@@ -33,6 +32,12 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": { "usesCleartextTraffic": true }
         }
       ]
     ],
