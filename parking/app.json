@@ -14,10 +14,10 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff",
-        "usesCleartextTraffic": true
+        "backgroundColor": "#ffffff"
       },
-      "package": "pardis.parking"
+      "package": "pardis.parking",
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",
