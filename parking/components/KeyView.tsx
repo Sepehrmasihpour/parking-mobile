@@ -11,11 +11,10 @@ const KeyView: React.FC<KeyViewProps> = ({ keyValue, countDown }) => {
     <View style={styles.container}>
       <View style={styles.qrContainer}>
         <Text style={styles.expiryText}>Expires in: {countDown}s</Text>
-        {/* <QRCode
+        <QRCode
           value={keyValue}
           size={300} // Adjust size as needed
-        /> */}
-        <Text>{keyValue}</Text>
+        />
       </View>
     </View>
   );

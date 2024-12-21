@@ -100,7 +100,7 @@ export default function HomeScreen() {
    */
   useFocusEffect(
     useCallback(() => {
-      if (key && keyExpirationTime) {
+      if (key !== "" && keyExpirationTime) {
         const now = Date.now();
         const timeLeft = Math.ceil((keyExpirationTime - now) / 1000);
 
