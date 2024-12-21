@@ -14,6 +14,7 @@ const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,35}$/;
 
 export default function HomeScreen() {
   const { isSignedIn, setIsSignedIn } = useContext(AuthContext);
+
   const [userChoice, setUserChoice] = useState<null | "signUp" | "signIn">(
     null
   );
@@ -22,10 +23,17 @@ export default function HomeScreen() {
   const [usernameError, setUsernameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [apiError, setApiError] = useState("");
+
   const [key, setKey] = useState<string>("");
   const [keyTimer, setKeyTimer] = useState<number>(60);
+  const [keyExpirationTime, setKeyExpirationTime] = useState<number | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  /**
+   * Handle back button
+   */
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -47,10 +55,20 @@ export default function HomeScreen() {
     }, [userChoice])
   );
 
+  /**
+   * Whenever "key" is set, initialize the timer and
+   * record the expiration time (60 seconds from now).
+   */
   useEffect(() => {
     if (key === "") return;
 
+    // If a new key is generated, set expiration 60 seconds in the future.
+    const expiration = Date.now() + 60 * 1000; // 60 seconds
+    setKeyExpirationTime(expiration);
+
+    // Reset the timer display to 60
     setKeyTimer(60);
+
     const interval = setInterval(() => {
       setKeyTimer((prev) => {
         if (prev <= 1) {
@@ -62,14 +80,45 @@ export default function HomeScreen() {
       });
     }, 1000);
 
-    return () => clearInterval(interval); // Cleanup on unmount
+    // Cleanup on unmount or when key changes
+    return () => clearInterval(interval);
   }, [key]);
 
+  /**
+   * If the key is set, mark loading as false
+   * so that we display the KeyView or KeyButton
+   */
   useEffect(() => {
     if (key === "") return;
     setIsLoading(false);
   }, [key]);
 
+  /**
+   * On screen focus, check how much time has passed since the user left.
+   * If there's still time left on the key, update keyTimer accordingly;
+   * otherwise, reset the key.
+   */
+  useFocusEffect(
+    useCallback(() => {
+      if (key && keyExpirationTime) {
+        const now = Date.now();
+        const timeLeft = Math.ceil((keyExpirationTime - now) / 1000);
+
+        if (timeLeft <= 0) {
+          // Timer expired while user was away
+          setKey("");
+          setKeyTimer(60);
+        } else {
+          // Adjust the timer to what is actually left
+          setKeyTimer(timeLeft);
+        }
+      }
+    }, [key, keyExpirationTime])
+  );
+
+  /**
+   * Sign-up logic
+   */
   const handleSignUp = async () => {
     setUsernameError("");
     setPasswordError("");
@@ -107,6 +156,9 @@ export default function HomeScreen() {
     }
   };
 
+  /**
+   * Sign-in logic
+   */
   const handleSignIn = async () => {
     setUsernameError("");
     setPasswordError("");
@@ -134,6 +186,9 @@ export default function HomeScreen() {
     }
   };
 
+  /**
+   * Render logic
+   */
   if (isSignedIn) {
     if (isLoading) {
       return (
