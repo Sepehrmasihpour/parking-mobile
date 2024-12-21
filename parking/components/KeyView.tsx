@@ -1,11 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
+import React from "react";
+import { View, StyleSheet, Text } from "react-native";
 import QRCode from "react-native-qrcode-svg";
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import { getDoorKey } from "../utils/api";
-import { getAuthTokens } from "../utils/token";
-import { blue } from "react-native-reanimated/lib/typescript/Colors";
-
 interface KeyViewProps {
   keyValue: string;
   countDown: number;
@@ -16,10 +11,11 @@ const KeyView: React.FC<KeyViewProps> = ({ keyValue, countDown }) => {
     <View style={styles.container}>
       <View style={styles.qrContainer}>
         <Text style={styles.expiryText}>Expires in: {countDown}s</Text>
-        <QRCode
+        {/* <QRCode
           value={keyValue}
           size={300} // Adjust size as needed
-        />
+        /> */}
+        <Text>{keyValue}</Text>
       </View>
     </View>
   );

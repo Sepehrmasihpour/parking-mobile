@@ -5,7 +5,7 @@ import { getAuthTokens } from "../utils/token";
 import { getDoorKey } from "../utils/api";
 
 interface KeyButtonProps {
-  setKey: (value: string | null) => void;
+  setKey: (value: string) => void;
   setLoadingStatus: (value: boolean) => void;
 }
 

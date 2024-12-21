@@ -22,7 +22,7 @@ export default function HomeScreen() {
   const [usernameError, setUsernameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [apiError, setApiError] = useState("");
-  const [key, setKey] = useState<string | null>(null);
+  const [key, setKey] = useState<string>("");
   const [keyTimer, setKeyTimer] = useState<number>(60);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -48,13 +48,13 @@ export default function HomeScreen() {
   );
 
   useEffect(() => {
-    if (!key) return;
+    if (key === "") return;
 
     setKeyTimer(60);
     const interval = setInterval(() => {
       setKeyTimer((prev) => {
         if (prev <= 1) {
-          setKey(null); // Reset key after countdown
+          setKey(""); // Reset key after countdown
           clearInterval(interval);
           return 60; // Reset timer if needed
         }
@@ -66,7 +66,7 @@ export default function HomeScreen() {
   }, [key]);
 
   useEffect(() => {
-    if (!key) return;
+    if (key === "") return;
     setIsLoading(false);
   }, [key]);
 
@@ -142,7 +142,7 @@ export default function HomeScreen() {
         </View>
       );
     }
-    return key === null ? (
+    return key === "" ? (
       <KeyButton setKey={setKey} setLoadingStatus={setIsLoading} />
     ) : (
       <KeyView keyValue={key} countDown={keyTimer} />
